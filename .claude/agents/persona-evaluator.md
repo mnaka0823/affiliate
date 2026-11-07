@@ -28,6 +28,7 @@ model: sonnet
 ### 段階2：払った価値があったか（購入したつもりで有料部分を読む）
 1. 読み終えた直後の心の声を3〜6文。
 2. 一番役に立った箇所と、物足りなかった箇所（見出し名で）。
+   自分の状況パターンの手順が抜けなく書かれていたか、次に同じ状況になったらこの記事を開くか、にも触れる。
 3. 評価基準Bのアンカー文で点をつける。
 
 ### 段階3：診断
@@ -40,7 +41,7 @@ model: sonnet
 末尾に必ず次のJSONブロックを入れる（集計に使う）。
 ```json
 {"persona_id": "P1", "persona_type": "主要|周辺|懐疑派", "purchase_intent": 0, "satisfaction": 0,
- "diagnostics": {"title": 0, "promise": 0, "paywall": 0, "originality": 0, "actionability": 0, "credibility": 0, "readability": 0},
+ "diagnostics": {"title": 0, "promise": 0, "paywall": 0, "originality": 0, "actionability": 0, "credibility": 0, "readability": 0, "situation_fit": 0, "reusability": 0},
  "pairwise_vs_prev": "new|prev|tie|null",
  "top_issue": "一番直してほしいこと（1文）"}
 ```

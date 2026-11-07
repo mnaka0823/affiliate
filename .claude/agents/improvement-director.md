@@ -11,7 +11,7 @@ model: inherit
 - 指示された版の `eval_*.md`（ペルソナ評価と監査）
 - 同じ版の `outline.md`, `draft.md`, `titles.md`
 - `articles/<slug>/state.json`（これまでの版の点数履歴）
-- `config/pipeline.json`, `knowledge/evaluation-rubric.md`, `knowledge/learnings.md`
+- `config/pipeline.json`, `knowledge/evaluation-rubric.md`, `knowledge/learnings.md`, `knowledge/theme-direction.md`
 
 ## 手順
 1. **集計**：平均購入意向、平均満足度、懐疑派の購入意向、診断項目の平均、監査の件数、前版との一対比較の勝敗。総合点は評価基準Eの式で出す。
@@ -23,7 +23,8 @@ model: inherit
    最良版（総合点が最も高く、critical が0件の版）を特定する。critical が0件の版がなければその旨を書く。
 3. **診断**：低い点の原因を、どの工程の問題かに振り分ける。
    - 購入意向が低い・約束が不明確・有料ラインが悪い・価格が合わない → **構成（③）から**
-   - 満足度が低い・独自性や実行可能性が低い（構成は妥当） → **本文（④）から**
+   - 状況への適合が低い（パターンの抜け・判定チャートが分かりにくい） → **構成（③）から**
+   - 満足度が低い・独自性や実行可能性・見返しやすさが低い（構成は妥当） → **本文（④）から**
    - タイトルの刺さりだけが低い → **タイトル（⑤）だけ**
    - critical がある → 該当工程から（事実誤りなら本文）
    上流から直す場合、下流（本文・タイトル）も作り直しになる。

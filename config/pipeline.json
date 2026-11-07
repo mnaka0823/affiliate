@@ -1,4 +1,7 @@
 {
+  "theme_direction": "knowledge/theme-direction.md",
+  "theme_list_count": 15,
+  "theme_priority": "repeat_search_over_price",
   "persona_count": 4,
   "include_skeptic_persona": true,
   "title_candidates": 20,
