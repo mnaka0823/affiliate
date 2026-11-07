@@ -1,0 +1,23 @@
+{
+  "persona_count": 4,
+  "include_skeptic_persona": true,
+  "title_candidates": 20,
+  "title_finalists": 5,
+  "max_iterations": 3,
+  "pass_thresholds": {
+    "avg_purchase_intent": 4.0,
+    "avg_satisfaction": 4.0,
+    "skeptic_purchase_intent": 3.0,
+    "max_critical_audit_issues": 0
+  },
+  "plateau": {
+    "min_improvement": 0.15,
+    "patience": 2
+  },
+  "price_range_yen": [300, 3000],
+  "target_length_chars": {
+    "free_part": [1500, 3000],
+    "paid_part": [5000, 15000]
+  },
+  "author_profile": "knowledge/author-profile.md"
+}

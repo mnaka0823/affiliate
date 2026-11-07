@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit(./articles/**)",
+      "Edit(./knowledge/**)",
+      "Bash(mkdir -p articles/*)",
+      "Bash(mv articles/*)",
+      "Bash(cp articles/*)",
+      "Bash(date *)",
+      "Bash(ls *)"
+    ]
+  }
+}
