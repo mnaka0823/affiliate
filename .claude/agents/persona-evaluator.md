@@ -23,6 +23,7 @@ model: sonnet
 1. タイトルを一覧で見たときの第一印象を1〜2文。
 2. 無料部分を読んだ率直な心の声を3〜6文（自由記述）。
 3. 買う／買わない／迷う、とその決め手。
+   **「これは無料で検索するか、ChatGPTに聞けば済むのでは？」と一度は必ず自問し**、済むと思うならその理由を、それでも買うなら何が決め手かを書く（懐疑派は特に厳しく）。
 4. 書いたことを読み返し、評価基準Aのアンカー文で一番近いものを選んで点をつける。
 
 ### 段階2：払った価値があったか（購入したつもりで有料部分を読む）
@@ -41,7 +42,7 @@ model: sonnet
 末尾に必ず次のJSONブロックを入れる（集計に使う）。
 ```json
 {"persona_id": "P1", "persona_type": "主要|周辺|懐疑派", "purchase_intent": 0, "satisfaction": 0,
- "diagnostics": {"title": 0, "promise": 0, "paywall": 0, "originality": 0, "actionability": 0, "credibility": 0, "readability": 0, "situation_fit": 0, "reusability": 0},
+ "diagnostics": {"title": 0, "promise": 0, "paywall": 0, "originality": 0, "actionability": 0, "credibility": 0, "readability": 0, "situation_fit": 0, "reusability": 0, "non_substitutable": 0},
  "pairwise_vs_prev": "new|prev|tie|null",
  "top_issue": "一番直してほしいこと（1文）"}
 ```

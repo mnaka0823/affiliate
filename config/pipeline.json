@@ -1,7 +1,7 @@
 {
   "theme_direction": "knowledge/theme-direction.md",
   "theme_list_count": 15,
-  "theme_priority": "repeat_search_over_price",
+  "theme_priority": "payment_reason_first",
   "persona_count": 4,
   "include_skeptic_persona": true,
   "title_candidates": 20,
@@ -17,7 +17,7 @@
     "min_improvement": 0.15,
     "patience": 2
   },
-  "price_range_yen": [300, 3000],
+  "price_range_yen": [500, 980],
   "target_length_chars": {
     "free_part": [1500, 3000],
     "paid_part": [5000, 15000]
