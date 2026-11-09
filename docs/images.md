@@ -12,6 +12,17 @@
    - 一覧にIDがなければ、`config/images.json` の `model` か環境変数 `OPENAI_IMAGE_MODEL` を直してください。
 4. 接続先 `api.openai.com` が、実行環境のネットワークで許可されている必要があります（クラウド環境では許可リストに追加）。
 
+### クラウド環境（Claude Code on the web）でのキー
+環境変数にキーを平文で置かず、環境の「ネットワークシークレット」に保存します（セッションで `request_credential` のフォームから保存）。通信時にプロキシが認証ヘッダーを付けるので、スクリプトにはダミーの値を渡します。
+
+```bash
+OPENAI_API_KEY=proxy-injected python3 scripts/image.py models
+```
+キーの保存先は、このリポジトリ専用の環境（`affiliate-note`）にしてあります。
+
+### 429「no credits remaining」と出たとき
+OpenAI側のクレジット（残高）が足りません。platform.openai.com の Billing で残高を追加してください。エラーでは料金はかかりません。
+
 ## Claude Code から使う（自然言語）
 `/note-image` を付けるか、ふだんの言葉で頼みます。
 

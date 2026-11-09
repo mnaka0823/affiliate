@@ -211,7 +211,10 @@ def api_request(method: str, url: str, key: str, body: bytes | None, content_typ
         elif e.code == 401:
             hint = "\n  APIキーが無効です。OPENAI_API_KEY を確認してください。"
         elif e.code == 429:
-            hint = "\n  利用上限かレート制限です。時間をおくか、OpenAIの利用状況を確認してください。"
+            if "credit" in message.lower() or "billing" in message.lower() or "quota" in message.lower():
+                hint = "\n  OpenAIのクレジット（残高）が足りません。platform.openai.com の Billing で残高を追加してください。"
+            else:
+                hint = "\n  レート制限です。時間をおいて再実行してください。"
         raise CliError(redact(f"HTTP {e.code}: {message}{hint}", key))
     except urllib.error.URLError as e:
         raise CliError(redact(f"APIに接続できません: {e.reason}（ネットワークの許可設定や OPENAI_BASE_URL を確認）", key))

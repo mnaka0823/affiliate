@@ -184,6 +184,13 @@ class CliTest(unittest.TestCase):
         self.assertIn("モデルID", r.stderr)
         self.assertNotIn("SECRET", r.stderr + r.stdout)
 
+    def test_429_no_credits_gets_billing_hint(self):
+        Mock.fail = (429, {"error": {"message": "You have no credits remaining. Add credits to continue."}})
+        r = self.run_cli("generate", "-p", "x", "--out", str(self.out))
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("残高", r.stderr)
+        self.assertEqual(list(self.out.glob("*.png")) if self.out.exists() else [], [])
+
     def test_check_and_models(self):
         r = self.run_cli("check")
         self.assertEqual(r.returncode, 0)
