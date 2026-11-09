@@ -14,6 +14,7 @@ noteの有料記事を、リサーチ→ペルソナ→構成→本文→タイ�
 - `/note-article [テーマ] [--tier entry|full]`：1本作る（テーマ省略でネタ探しから。entry=298円の入口、full=本編）
 - `/note-batch [本数] [ジャンル] [--series]`：まとめて作る（`--series` で「次に困ること」でつながるシリーズ）
 - `/note-learn [slug] [実績]`：公開後の実績を記録して学習する
+- 画像：記事の見出し画像・挿絵は `image-director`（`/note-article` の仕上げで、希望したときだけ起動）。スタイルは `knowledge/visual-style.md`、最終判断はユーザー
 - `/note-image [依頼]`：画像の生成・編集（OpenAI Images API）。「見出し画像を作って」「この画像の背景を白に」のように自然言語で頼める。設定は `config/images.json`、鍵は環境変数 `OPENAI_API_KEY`、使い方は `docs/images.md`
 
 ## 構成
