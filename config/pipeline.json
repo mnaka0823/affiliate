@@ -17,10 +17,49 @@
     "min_improvement": 0.15,
     "patience": 2
   },
-  "price_range_yen": [500, 980],
+  "price_range_yen": [
+    298,
+    980
+  ],
   "target_length_chars": {
-    "free_part": [1500, 3000],
-    "paid_part": [5000, 15000]
+    "free_part": [
+      1500,
+      3000
+    ],
+    "paid_part": [
+      5000,
+      15000
+    ]
   },
-  "author_profile": "knowledge/author-profile.md"
+  "author_profile": "knowledge/author-profile.md",
+  "default_tier": "full",
+  "tiers": {
+    "entry": {
+      "price_yen": 298,
+      "free_part": [
+        500,
+        1000
+      ],
+      "paid_part": [
+        1500,
+        3500
+      ],
+      "note": "1つの場面を短く解決する入口記事。本編への導線は末尾に1か所だけ"
+    },
+    "full": {
+      "price_range_yen": [
+        580,
+        980
+      ],
+      "free_part": [
+        1500,
+        3000
+      ],
+      "paid_part": [
+        5000,
+        12000
+      ],
+      "note": "全手順＋文例＋記録表など、成果物を厚くした本編"
+    }
+  }
 }

@@ -1,7 +1,7 @@
 ---
 name: note-article
 description: note有料記事を1本作るオーケストレーター。リサーチ→ペルソナ→構成→本文→タイトル→ペルソナ評価＋品質監査→改善判定を、合格するか上限に達するまでループし、note貼り付け用の最終稿を出す。「note記事を作って」「有料記事を1本書いて」で使う。
-argument-hint: "[テーマ（省略するとネタ探しから）]"
+argument-hint: "[テーマ（省略するとネタ探しから）] [--tier entry|full]"
 ---
 
 # note有料記事オーケストレーター
@@ -11,6 +11,9 @@ argument-hint: "[テーマ（省略するとネタ探しから）]"
 必ず「読むファイルのパス」と「書き出すファイルのパス」を明記してください。
 
 テーマ：$ARGUMENTS
+
+**tier**：引数に `--tier entry`（入口：298円・短い）または `--tier full`（本編：580〜980円）があれば、それを使う。なければ `config/pipeline.json` の `default_tier`。
+tier は `state.json` に記録し、`structure-architect` / `article-writer` / `title-optimizer` への指示にも必ず添える。entry の記事では、本編のタイトル案と導線を末尾に1か所入れる。
 
 ## 0. 準備
 1. `config/pipeline.json` と `knowledge/theme-direction.md`（記事の方向性）を読む。

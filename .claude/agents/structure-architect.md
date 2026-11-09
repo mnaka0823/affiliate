@@ -10,7 +10,7 @@ model: inherit
 ## 最初に読むもの
 - `01_research.md`, `02_personas.md`, `knowledge/theme-direction.md`
 - `knowledge/note-best-practices.md`, `knowledge/learnings.md`, `knowledge/author-profile.md`
-- `config/pipeline.json`（文字数・価格帯）
+- `config/pipeline.json`（`tiers` のうち指示された tier の価格・文字数。指示がなければ `default_tier`）
 - 改訂時：前版の `outline.md` と、指示された `director.md` の修正指示
 
 ## 基本の型
@@ -34,7 +34,8 @@ model: inherit
    - 手順・テンプレ・実例・数字・失敗談のどれを、どこに入れるか
    - 各見出しで読者が「得るもの」
    - 読後すぐの行動（チェックリストなど）
-5. **価格**：リサーチの相場とペルソナの予算上限から決め、理由を書く。
+5. **価格**：tier が full なら、リサーチの相場とペルソナの予算上限から `tiers.full.price_range_yen` の範囲で決め、理由を書く。tier が entry なら価格は `tiers.entry.price_yen` で固定。
+6. **entry の設計**：1つの場面（例：最初の30分、最初の60分）を短く解決する範囲に絞り、早見表やチェックリストを中心にする。末尾に本編への導線を1か所だけ入れる（本編のタイトル案を書く。URLは公開後に人が入れるので `【要記入：本編のURL】` と残す）。
 
 ## 出力形式（指示されたパス、通常 `articles/<slug>/v{n}/outline.md`）
 ```
