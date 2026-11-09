@@ -1,5 +1,7 @@
 # 画像の生成・編集（OpenAI Images API）
 
+> **現在の運用**：画像の生成はChatGPT側で手動で行います（貼る指示文：`knowledge/visual-trial-1-chatgpt.md`）。この文書のAPI経由の方法は、OpenAIのAPI残高を用意した場合の任意の手段です。
+
 `scripts/image.py`（標準ライブラリのみ。`pip install` は不要）と、Claude Code から自然言語で頼む `/note-image` スキルで使います。
 
 ## 準備

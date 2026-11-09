@@ -1,6 +1,6 @@
 # ビジュアル試作1（アイコン4案＋見出し画像3案）
 
-状態：指示文は用意済み。**未生成**（APIキー、モデルIDの確認、`api.openai.com` の許可が先に必要）
+状態：**生成はChatGPT側で行う運用に変更**。貼る指示文は `knowledge/visual-trial-1-chatgpt.md`。（API経由の生成は、OpenAIのAPIクレジット残高がなく未実施。`scripts/visual_trial_1.sh` は残してある）
 スタイル：`knowledge/visual-style.md`（v1）／実行：`scripts/visual_trial_1.sh`
 
 ## 生成する7枚（APIを7回呼ぶ。料金がかかる）
