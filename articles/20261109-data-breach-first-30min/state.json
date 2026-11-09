@@ -2,9 +2,9 @@
   "slug": "20261109-data-breach-first-30min",
   "theme": "個人情報の流出通知が来た最初の30分にやること（チェックリスト）",
   "tier": "entry",
-  "status": "running",
-  "current_version": 1,
-  "best_version": 1,
+  "status": "done_unpassed",
+  "current_version": 3,
+  "best_version": 3,
   "history": [
     {
       "version": 1,
@@ -16,6 +16,28 @@
       "decision": "continue",
       "restart_from": "draft",
       "best_version": 1
+    },
+    {
+      "version": 2,
+      "total_score": 3.52,
+      "avg_purchase_intent": 3.5,
+      "avg_satisfaction": 3.5,
+      "skeptic_purchase_intent": 3.0,
+      "critical": 0,
+      "decision": "continue",
+      "restart_from": "draft",
+      "best_version": 2
+    },
+    {
+      "version": 3,
+      "total_score": 3.64,
+      "avg_purchase_intent": 3.75,
+      "avg_satisfaction": 3.5,
+      "skeptic_purchase_intent": 3.0,
+      "critical": 0,
+      "decision": "stop_max",
+      "restart_from": "none",
+      "best_version": 3
     }
   ],
   "started_at": "2026-11-09T05:49:21.508422+00:00"
