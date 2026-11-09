@@ -1,0 +1,483 @@
+<title>note記事パイプライン</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* 編集部の進行表。工程が左から右へ流れ、差し戻しだけが校正の青鉛筆の色で引かれる */
+  :root {
+    --bg: #F5F6F8;
+    --surface: #FFFFFF;
+    --fg: #17202B;
+    --fg-soft: #4F5E6D;
+    --line: #D3D9E0;
+    --accent: #2B4FB8;
+    --accent-soft: #E6ECFA;
+    --ok: #1E7A55;
+    --ok-soft: #E1F2EA;
+    --warn: #8A5700;
+    --warn-soft: #FBEFD5;
+    --block: #B3402F;
+    --block-soft: #F8E4E0;
+    --f-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F151C; --surface: #161E27; --fg: #E7ECF2; --fg-soft: #9FAEBD; --line: #2A3542;
+      --accent: #92ABF3; --accent-soft: #1E2A4A; --ok: #5FCB9A; --ok-soft: #14302A;
+      --warn: #E3B04F; --warn-soft: #352A12; --block: #EE8C7B; --block-soft: #3A1F1B;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F151C; --surface: #161E27; --fg: #E7ECF2; --fg-soft: #9FAEBD; --line: #2A3542;
+    --accent: #92ABF3; --accent-soft: #1E2A4A; --ok: #5FCB9A; --ok-soft: #14302A;
+    --warn: #E3B04F; --warn-soft: #352A12; --block: #EE8C7B; --block-soft: #3A1F1B;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.8;
+    padding-block: 40px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+  h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+  h1 { font-size: clamp(30px, 6vw, 44px); font-weight: 800; letter-spacing: 0.01em; }
+  h2 { font-size: 24px; font-weight: 800; }
+  h3 { font-size: 17px; font-weight: 600; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--f-mono); font-size: 0.88em; }
+  code { background: var(--accent-soft); color: var(--fg); padding: 1px 6px; border-radius: 4px; }
+  .soft { color: var(--fg-soft); }
+  .eyebrow { font: 500 12px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-soft); }
+
+  header { display: flex; flex-direction: column; gap: 14px; }
+  .lede { font-size: 17px; max-width: 40em; }
+  .stamp { font: 400 12.5px var(--f-mono); color: var(--fg-soft); overflow-wrap: anywhere; }
+
+  section { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  section > .sub { max-width: 44em; color: var(--fg-soft); }
+
+  /* 現在地 */
+  .now { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .panel ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+  .tag { font: 700 12px var(--f-body); padding: 2px 10px; border-radius: 99px; align-self: flex-start; white-space: nowrap; }
+  .tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .tag.now { background: var(--warn-soft); color: var(--warn); }
+  .tag.next { background: var(--accent-soft); color: var(--accent); }
+  .tag.idea { background: transparent; color: var(--fg-soft); border: 1px dashed var(--fg-soft); }
+
+  /* 図 */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  figcaption { color: var(--fg-soft); font-size: 14px; max-width: 46em; }
+  .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .hint { font-size: 12.5px; color: var(--fg-soft); display: none; }
+  svg.diagram { display: block; width: 100%; min-width: 860px; height: auto; color: var(--fg); }
+  .band { fill: var(--fg); }
+  .band-t { font: 700 12.5px var(--f-body); fill: var(--bg); }
+  .node { fill: var(--surface); stroke: var(--fg-soft); stroke-width: 1.2; }
+  .node-key { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+  .node-out { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.2; }
+  .node-kb { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.2; }
+  .group { fill: none; stroke: var(--fg-soft); stroke-width: 1.2; stroke-dasharray: 2 3; }
+  .loop { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .t1 { font: 700 13px var(--f-body); fill: var(--fg); }
+  .t2 { font: 500 10.5px var(--f-mono); fill: var(--fg-soft); }
+  .tl { font: 500 12px var(--f-body); fill: var(--fg-soft); }
+  .tA { font: 700 12px var(--f-body); fill: var(--accent); }
+  .flow { fill: none; stroke: var(--fg-soft); stroke-width: 1.5; }
+  .back { fill: none; stroke: var(--accent); stroke-width: 2.4; }
+  .mk { fill: var(--fg-soft); }
+  .mkA { fill: var(--accent); }
+
+  .principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+  .principles .panel h3 { font-size: 16px; }
+
+  /* 関門 */
+  .gates { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; }
+  .gate { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .gate.first { border: 2px solid var(--accent); }
+  .gate dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; }
+  .gate dt { font-weight: 700; white-space: nowrap; }
+  .gate dd { margin: 0; color: var(--fg-soft); min-width: 0; }
+  .formula { font: 500 13px var(--f-mono); background: var(--accent-soft); border-radius: 6px; padding: 10px 14px; overflow-x: auto; white-space: nowrap; }
+  .types { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .types .panel { padding: 14px 16px; gap: 6px; }
+  .types b { font-family: var(--f-display); font-size: 15px; }
+
+  /* 表 */
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; color: var(--fg-soft); font-weight: 700; background: var(--bg); }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font: 500 14px var(--f-mono); white-space: nowrap; }
+
+  /* ロードマップ */
+  .road { display: flex; flex-direction: column; gap: 14px; }
+  .phase { background: var(--surface); border: 1px solid var(--line); border-left-width: 6px; border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .phase.ok { border-left-color: var(--ok); }
+  .phase.now { border-left-color: var(--warn); }
+  .phase.next { border-left-color: var(--accent); }
+  .phase.idea { border-left-color: var(--line); border-left-style: dashed; }
+  .phase-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .phase-head .p { font: 500 12px var(--f-mono); color: var(--fg-soft); }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; }
+  .cols h4 { margin: 0 0 4px; font-size: 12.5px; color: var(--fg-soft); letter-spacing: 0.04em; }
+  .cols ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+  .done-line { border-top: 1px solid var(--line); padding-top: 10px; font-size: 14px; }
+  .done-line b { color: var(--fg); }
+  .gate-bar { background: var(--accent-soft); color: var(--fg); border-radius: 8px; padding: 12px 18px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; }
+  .gate-bar b { color: var(--accent); white-space: nowrap; }
+
+  .unknown { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .unknown .panel { border-left: 4px solid var(--block); }
+  .unknown h3 { font-size: 15.5px; }
+
+  details { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 20px; }
+  summary { cursor: pointer; font-weight: 700; }
+  summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  pre { margin: 12px 0 0; overflow-x: auto; font: 400 13px/1.7 var(--f-mono); }
+
+  @media (max-width: 640px) {
+    body { font-size: 14.5px; padding-block: 28px 56px; }
+    .wrap { gap: 44px; }
+    .hint { display: block; }
+    .panel, .gate, .phase { padding: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">note paid article / multi-agent</span>
+  <h1>note記事パイプライン</h1>
+  <p class="lede">noteの有料記事を、調査から評価までエージェントに分担させて作る仕組みです。全体の構造と、ここからの進め方をまとめました。</p>
+  <p class="stamp">2026-11-09 時点 ／ mnaka0823/affiliate ／ claude/note-paid-article-multi-agent-abpm42</p>
+</header>
+
+<section aria-labelledby="now-h">
+  <h2 id="now-h">現在地</h2>
+  <div class="now">
+    <div class="panel">
+      <span class="tag ok">できている</span>
+      <ul>
+        <li>8つのエージェントと4つのスキルを作成</li>
+        <li>評価基準、テーマ方針、設計ドキュメント</li>
+        <li>テーマ選定を見直し（v1 → v2）、15テーマを選定</li>
+        <li>GitHub に push 済み</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <span class="tag now">まだできていない</span>
+      <ul>
+        <li>記事を1本、最後まで通して作ったことがない</li>
+        <li>noteの競合（価格・スキ数）の確認</li>
+        <li>数字の原典（国税庁など）の確認</li>
+        <li>著者プロフィールの記入</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <span class="tag next">次の一手</span>
+      <ul>
+        <li>上位テーマの競合を note で見て貼る</li>
+        <li>自分の経験をプロフィールに書く</li>
+        <li>流出通知のテーマで1本目を作る</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="arch-h">
+  <h2 id="arch-h">アーキテクチャ</h2>
+  <p class="sub">全体を動かすのは、メインセッションで動くオーケストレーターです。各工程はサブエージェントが担当し、受け渡しはすべてファイルで行います。青い線が、評価の結果を受けて直す工程へ戻る流れです。</p>
+  <figure>
+    <span class="hint">図は横にスクロールできます。</span>
+    <div class="scroll">
+<svg class="diagram" viewBox="0 0 940 600" role="img" aria-label="オーケストレーターが、調査とペルソナ作成の後、構成・本文・タイトル・並列評価・判定のループを回す。判定が継続なら直す工程へ戻り、合格か上限なら最良版を最終稿にして人が公開する。公開後の実績は知識ベースに戻り、次の調査と判定が読む。">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="mk"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="mkA"/></marker>
+  </defs>
+
+  <rect class="band" x="20" y="12" width="900" height="36" rx="6"/>
+  <text class="band-t" x="36" y="35">オーケストレーター /note-article：自分では書かず評価もしない。ファイルを渡し、ループを回し、state.json に記録する</text>
+
+  <!-- 1回だけの工程 -->
+  <rect class="node" x="20" y="72" width="250" height="56" rx="6"/>
+  <text class="t1" x="34" y="95">① 企画・ネタ調査</text>
+  <text class="t2" x="34" y="115">trend-researcher → 01_research.md</text>
+  <path class="flow" d="M270 100 H320" marker-end="url(#arr)"/>
+  <rect class="node" x="320" y="72" width="250" height="56" rx="6"/>
+  <text class="t1" x="334" y="95">② 購入ペルソナ作成（懐疑派を含む）</text>
+  <text class="t2" x="334" y="115">persona-builder → 02_personas.md</text>
+  <path class="flow" d="M445 128 V146 H115 V202" marker-end="url(#arr)"/>
+  <text class="tl" x="124" y="177">初回は構成から</text>
+
+  <!-- 改善ループ -->
+  <rect class="loop" x="20" y="160" width="900" height="252" rx="10"/>
+  <text class="tA" x="906" y="182" text-anchor="end">改善ループ（最大3回。各版は v{n}/ に保存）</text>
+
+  <rect class="node" x="40" y="204" width="170" height="56" rx="6"/>
+  <text class="t1" x="52" y="227">③ 構成設計</text>
+  <text class="t2" x="52" y="247">structure-architect</text>
+  <path class="flow" d="M210 232 H240" marker-end="url(#arr)"/>
+  <rect class="node" x="240" y="204" width="170" height="56" rx="6"/>
+  <text class="t1" x="252" y="227">④ 本文作成</text>
+  <text class="t2" x="252" y="247">article-writer</text>
+  <path class="flow" d="M410 232 H440" marker-end="url(#arr)"/>
+  <rect class="node" x="440" y="204" width="150" height="56" rx="6"/>
+  <text class="t1" x="452" y="227">⑤ タイトル決定</text>
+  <text class="t2" x="452" y="247">title-optimizer</text>
+  <path class="flow" d="M590 232 H625" marker-end="url(#arr)"/>
+
+  <rect class="group" x="625" y="196" width="285" height="118" rx="8"/>
+  <text class="tl" x="637" y="216">⑥ 並列評価（同時に起動）</text>
+  <rect class="node" x="637" y="226" width="140" height="48" rx="6"/>
+  <text class="t1" x="647" y="246">ペルソナ評価 ×4</text>
+  <text class="t2" x="647" y="263">persona-evaluator</text>
+  <rect class="node" x="787" y="226" width="113" height="48" rx="6"/>
+  <text class="t1" x="797" y="246">品質監査</text>
+  <text class="t2" x="797" y="263">quality-auditor</text>
+  <text class="tl" x="637" y="299" style="font-size:11px">構成の意図・改訂メモは見せない</text>
+
+  <path class="flow" d="M767 314 V338" marker-end="url(#arr)"/>
+  <rect class="node-key" x="625" y="338" width="285" height="56" rx="6"/>
+  <text class="t1" x="639" y="361">⑦ 集計・診断・判定</text>
+  <text class="t2" x="639" y="381">improvement-director → director.md</text>
+
+  <!-- 差し戻し -->
+  <path class="back" d="M625 366 H125 V262" marker-end="url(#arrA)"/>
+  <text class="tA" x="140" y="357">継続：修正指示を添えて、直す工程から再実行（構成 / 本文 / タイトル）</text>
+
+  <!-- 終了と公開 -->
+  <path class="flow" d="M680 394 V440" marker-end="url(#arr)"/>
+  <text class="tl" x="670" y="428" text-anchor="end">合格・上限・頭打ちで終了 → 最良版</text>
+  <rect class="node-out" x="560" y="440" width="200" height="56" rx="6"/>
+  <text class="t1" x="574" y="463">最終稿</text>
+  <text class="t2" x="574" y="483">final.md + publish-checklist.md</text>
+  <path class="flow" d="M760 468 H790" marker-end="url(#arr)"/>
+  <rect class="node" x="790" y="440" width="130" height="56" rx="6"/>
+  <text class="t1" x="802" y="463">人が確認して</text>
+  <text class="t1" x="802" y="482">公開</text>
+  <path class="flow" d="M855 496 V520" marker-end="url(#arr)"/>
+  <rect class="node" x="770" y="520" width="150" height="50" rx="6"/>
+  <text class="t1" x="782" y="541">実績を記録</text>
+  <text class="t2" x="782" y="558">/note-learn</text>
+  <path class="flow" d="M770 545 H520" marker-end="url(#arr)"/>
+  <text class="tl" x="645" y="537" text-anchor="middle">閲覧数・販売数</text>
+
+  <!-- 知識ベース -->
+  <rect class="node-kb" x="20" y="500" width="500" height="72" rx="6"/>
+  <text class="t1" x="34" y="523">knowledge/（知識ベース）</text>
+  <text class="t2" x="34" y="542">評価基準・テーマ方針・著者プロフィール・競合メモ・実売データ</text>
+  <text class="t2" x="34" y="559">毎回、リサーチ・構成・判定が読む。/note-learn が更新する</text>
+  <path class="flow" d="M20 536 H8 V100 H20" marker-end="url(#arr)"/>
+</svg>
+    </div>
+    <figcaption>左端の線は、知識ベースを次の調査が読む流れです。実売データが貯まるほど、テーマの選び方と評価の基準が実績に寄っていきます。</figcaption>
+  </figure>
+
+  <div class="principles">
+    <div class="panel">
+      <h3>受け渡しはファイル</h3>
+      <p class="soft">各工程が <code>articles/&lt;日付&gt;-&lt;slug&gt;/</code> に結果を書き、次の工程が読みます。何がどこで変わったかを後から追えます。</p>
+    </div>
+    <div class="panel">
+      <h3>評価は読者と同じ条件</h3>
+      <p class="soft">評価役には、構成の意図や改訂メモを見せません。ペルソナは先に感想を書き、そのあと基準の文に照らして点をつけます。</p>
+    </div>
+    <div class="panel">
+      <h3>投稿は人が行う</h3>
+      <p class="soft">公開、基準の変更、実績の記録は人が判断します。著者プロフィールにない実績は作らず、「要記入」として残します。</p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="theme-h">
+  <h2 id="theme-h">テーマの選び方</h2>
+  <p class="sub">最初のテーマ選びは「繰り返し検索されるか」で行い、500〜980円を払う理由の確認が抜けていました。いまは払う理由を最初の関門にしています（方針 v2）。</p>
+  <div class="gates">
+    <div class="gate first">
+      <span class="tag next">関門A　最重要</span>
+      <h3>払う理由がある</h3>
+      <dl>
+        <dt>損得</dt><dd>価格の10倍以上の価値に見える</dd>
+        <dt>切迫性</dt><dd>期限・事件・不安で、今知りたい</dd>
+        <dt>成果物</dt><dd>文例・チェックリストなど、そのまま使える</dd>
+        <dt>代替</dt><dd>無料の公式情報やAIとの差を1文で言える</dd>
+      </dl>
+    </div>
+    <div class="gate">
+      <span class="tag idea">関門B</span>
+      <h3>読まれる</h3>
+      <dl>
+        <dt>需要</dt><dd>検索やSNSで探されていて、時期にピークがある</dd>
+        <dt>財布</dt><dd>買い手が自分でお金を出す層である</dd>
+      </dl>
+    </div>
+    <div class="gate">
+      <span class="tag idea">関門C</span>
+      <h3>書ける・安全に出せる</h3>
+      <dl>
+        <dt>資格</dt><dd>税務・法律の個別助言にならない</dd>
+        <dt>正確</dt><dd>公的な一次情報で裏づけ、確認日を書く</dd>
+        <dt>著者</dt><dd>自分の経験で語れる</dd>
+      </dl>
+    </div>
+  </div>
+  <p class="formula">優先度 = 損得×3 + 代替されにくさ×3 + 切迫性×2 + 成果物×2 + 需要×2 + 財布 + 著者 + 加点4項目</p>
+  <p class="soft">どれかの関門が2点以下なら候補から外します。加点は、状況で分かれる、繰り返し陥る、古くなりにくい、情報がまとまっていない、の4つです。</p>
+  <div class="types">
+    <div class="panel"><b>緊急対処型</b><span class="soft">個人情報が流出したら、詐欺の振込をした直後</span></div>
+    <div class="panel"><b>予防チェックリスト型</b><span class="soft">流出前にやる設定、年末調整の書類カレンダー</span></div>
+    <div class="panel"><b>お金が戻る手続き型</b><span class="soft">住宅ローン控除、ふるさと納税、医療費控除</span></div>
+    <div class="panel"><b>時短ツール集型</b><span class="soft">職種を絞った業務AIプロンプト</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="stop-h">
+  <h2 id="stop-h">ループが止まる条件</h2>
+  <p class="sub">設定は <code>config/pipeline.json</code> で変えられます。終了したときは、最後の版ではなく、最も点の高かった版を採用します。</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>終わり方</th><th>条件</th></tr></thead>
+      <tbody>
+        <tr><td><b>合格</b></td><td>平均の購入意向が <span class="mono">4.0</span> 以上、満足度が <span class="mono">4.0</span> 以上、懐疑派の購入意向が <span class="mono">3.0</span> 以上、品質監査の致命的な指摘が <span class="mono">0</span> 件</td></tr>
+        <tr><td><b>上限</b></td><td>改善は最大 <span class="mono">3</span> 回まで</td></tr>
+        <tr><td><b>頭打ち</b></td><td>総合点の伸びが <span class="mono">0.15</span> 未満の状態が <span class="mono">2</span> 回続いたとき</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="road-h">
+  <h2 id="road-h">ロードマップ</h2>
+  <p class="sub">各段階の終わりに、次へ進むかどうかを決める確認点を置いています。売れるかどうかは、最初の数本を公開してみるまで分かりません。</p>
+
+  <div class="road">
+    <div class="phase ok">
+      <div class="phase-head"><span class="p">PHASE 0</span><h3>設計と実装</h3><span class="tag ok">完了</span></div>
+      <div class="cols">
+        <div><h4>できたこと</h4><ul>
+          <li>エージェント8つ、スキル4つ、設定、知識ベース</li>
+          <li>テーマ選定を v2 に更新し、15テーマを選定</li>
+          <li>GitHub に push</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="phase now">
+      <div class="phase-head"><span class="p">PHASE 1</span><h3>検証の準備</h3><span class="tag now">今ここ</span></div>
+      <div class="cols">
+        <div><h4>あなた</h4><ul>
+          <li><code>author-profile.md</code> に自分の経験・実績を書く</li>
+          <li>noteで上位テーマの競合を検索し、<code>competitors.md</code> の書式で貼る</li>
+          <li>（任意）国税庁などをネットワークの許可に追加</li>
+        </ul></div>
+        <div><h4>Claude</h4><ul>
+          <li>競合を見て、価格案とテーマの順位を見直す</li>
+          <li>一次情報で件数・控除額・期限を確かめ直す</li>
+        </ul></div>
+      </div>
+      <p class="done-line"><b>終わりの目安</b>　上位3テーマで、競合と原典の確認が済んでいる。</p>
+    </div>
+
+    <div class="phase next">
+      <div class="phase-head"><span class="p">PHASE 2</span><h3>1本目を作る</h3><span class="tag next">次</span></div>
+      <div class="cols">
+        <div><h4>あなた</h4><ul>
+          <li>新しいセッションで <code>/note-article</code> を実行（スキルは新しいセッションで読み込まれる）</li>
+          <li>「要記入」を自分の経験で埋め、公開前チェックリストを確認</li>
+        </ul></div>
+        <div><h4>Claude</h4><ul>
+          <li>調査から最終稿までを通しで実行</li>
+          <li>最初の30分でやることを、無料記事として出す案も用意</li>
+        </ul></div>
+      </div>
+      <p class="done-line"><b>終わりの目安</b>　合格ラインに届く。または3回で止まった理由が分かる。</p>
+    </div>
+
+    <div class="gate-bar"><b>確認点1</b><span>無料記事の反応（閲覧・スキ）を見て、有料にするかを決める。</span></div>
+
+    <div class="phase next">
+      <div class="phase-head"><span class="p">PHASE 3</span><h3>公開と計測</h3><span class="tag next">次</span></div>
+      <div class="cols">
+        <div><h4>あなた</h4><ul>
+          <li>手動で公開する</li>
+          <li>7日後・30日後に <code>/note-learn</code> で販売数を記録</li>
+        </ul></div>
+        <div><h4>Claude</h4><ul>
+          <li>3本たまったら、ペルソナ評価と実売のずれを分析</li>
+          <li>重みやしきい値の変更案を出す（変更は承認後）</li>
+        </ul></div>
+      </div>
+      <p class="done-line"><b>終わりの目安</b>　3本分の実績が <code>performance.csv</code> にある。</p>
+    </div>
+
+    <div class="gate-bar"><b>確認点2</b><span>評価の高い記事が実際に売れているか。売れていなければ、テーマ方針を v3 に作り直す。</span></div>
+
+    <div class="phase next">
+      <div class="phase-head"><span class="p">PHASE 4</span><h3>量産</h3><span class="tag next">次</span></div>
+      <div class="cols">
+        <div><h4>やること</h4><ul>
+          <li><code>/note-batch --series</code> で「次に困ること」でつながるシリーズを作る（流出・詐欺、年末から申告）</li>
+          <li>旬の順に並べて公開する</li>
+          <li>実売が出た型に寄せる</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="phase idea">
+      <div class="phase-head"><span class="p">PHASE 5</span><h3>運用の仕組み化</h3><span class="tag idea">候補・未着手</span></div>
+      <div class="cols">
+        <div><h4>検討すること</h4><ul>
+          <li>テーマの季節カレンダー</li>
+          <li>制度改正があったときの記事の更新</li>
+          <li><code>scripts/batch.sh</code> による記事ごとの別セッション実行</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="unk-h">
+  <h2 id="unk-h">まだ分かっていないこと</h2>
+  <div class="unknown">
+    <div class="panel"><h3>売れるかどうか</h3><p class="soft">noteの競合（価格・スキ数）が未確認です。点数は見立てで、売れる保証ではありません。</p></div>
+    <div class="panel"><h3>無料やAIとの差</h3><p class="soft">全テーマで3点止まりでした。差が出るかは、文例・順番・確認表の作り込み次第です。</p></div>
+    <div class="panel"><h3>数字の原典</h3><p class="soft">流出事案の件数、控除額の上限、期限は報道や民間サイトが根拠です。国税庁などは未接続です。</p></div>
+    <div class="panel"><h3>通しの動作</h3><p class="soft">8つのエージェントを続けて動かした実績がありません。1本目で不具合が出る可能性があります。</p></div>
+    <div class="panel"><h3>noteの規約</h3><p class="soft">AIを使った記事の販売について、noteの最新の規約を確認していません。公開前に公式を確認します。</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="files-h">
+  <h2 id="files-h">ファイルの構成</h2>
+  <details>
+    <summary>リポジトリの中身を開く</summary>
+<pre>.claude/agents/    trend-researcher, persona-builder, structure-architect,
+                   article-writer, title-optimizer, persona-evaluator,
+                   quality-auditor, improvement-director
+.claude/skills/    note-article, note-batch, note-learn, note-themes
+config/            pipeline.json
+knowledge/         theme-direction.md, evaluation-rubric.md, note-best-practices.md,
+                   author-profile.md, competitors.md, learnings.md, performance.csv
+articles/
+  _themes/         20261107.md (v1), 20261107-v2.md
+  &lt;日付&gt;-&lt;slug&gt;/ 01_research.md, 02_personas.md, v{n}/*, final.md,
+                   publish-checklist.md, next-themes.md, state.json
+docs/              architecture.md, overview.html, settings.example.json
+scripts/           batch.sh</pre>
+  </details>
+</section>
+
+</div>
