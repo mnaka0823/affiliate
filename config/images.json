@@ -1,0 +1,12 @@
+{
+  "model": "gpt-image-2.6-sunburst",
+  "base_url": "https://api.openai.com/v1",
+  "size": "1024x1024",
+  "quality": "medium",
+  "output_format": "png",
+  "n": 1,
+  "output_dir": "images/output",
+  "max_n": 4,
+  "timeout_sec": 300,
+  "max_image_mb": 25
+}

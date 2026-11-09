@@ -1,2 +1,4 @@
 articles/_logs/
 articles/_tmp-*/
+.env
+images/output/

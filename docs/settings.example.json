@@ -12,7 +12,11 @@
       "Bash(mv articles/*)",
       "Bash(cp articles/*)",
       "Bash(date *)",
-      "Bash(ls *)"
+      "Bash(ls *)",
+      "Bash(python3 scripts/image.py check:*)",
+      "Bash(python3 scripts/image.py models:*)",
+      "Bash(python3 scripts/image.py generate:*)",
+      "Bash(python3 scripts/image.py edit:*)"
     ]
   }
 }
